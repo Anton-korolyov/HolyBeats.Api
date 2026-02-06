@@ -1,9 +1,5 @@
-/bin/
-
-/obj/
-
+bin/
+obj/
 .vs/
-
 *.user
-
-appsettings.*.json
+*.suo
