@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HolyBeats.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260205130205_Init")]
-    partial class Init
+    [Migration("20260206063021_Baseline")]
+    partial class Baseline
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
