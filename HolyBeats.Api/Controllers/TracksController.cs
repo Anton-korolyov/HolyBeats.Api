@@ -24,16 +24,31 @@ namespace HolyBeats.Api.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll(
-            int page = 1,
-            int pageSize = 20,
-            string? search = null)
+    int page = 1,
+    int pageSize = 20,
+    string? search = null,
+    string? genre = null,
+    string? language = null)
         {
             var query = _db.Tracks.AsQueryable();
 
+            // 🔎 Search by title
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(t =>
                     t.Title.Contains(search));
+            }
+
+            // 🎵 Filter by genre
+            if (!string.IsNullOrWhiteSpace(genre))
+            {
+                query = query.Where(t => t.Genre == genre);
+            }
+
+            // 🌍 Filter by language
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                query = query.Where(t => t.Language == language);
             }
 
             var total = await query.CountAsync();
@@ -46,6 +61,9 @@ namespace HolyBeats.Api.Controllers
                 {
                     t.Id,
                     t.Title,
+                    t.Genre,
+                    t.Language,
+                    t.Duration,
                     Url = _r2.GetPublicUrl(t.FileName)
                 })
                 .ToListAsync();
