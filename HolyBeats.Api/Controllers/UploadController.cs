@@ -44,7 +44,12 @@ namespace HolyBeats.Api.Controllers
             ms.Position = 0;
 
             // ===== читаем длительность =====
-            var tempPath = Path.GetTempFileName();
+            var ext = Path.GetExtension(safeFileName);
+
+            var tempPath = Path.Combine(
+                Path.GetTempPath(),
+                Guid.NewGuid().ToString() + ext
+            );
 
             await System.IO.File.WriteAllBytesAsync(
                 tempPath,
