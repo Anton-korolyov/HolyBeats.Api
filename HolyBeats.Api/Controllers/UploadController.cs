@@ -1,4 +1,5 @@
-﻿using HolyBeats.Api.Data;
+﻿using System.Diagnostics;
+using HolyBeats.Api.Data;
 using HolyBeats.Api.Models;
 using HolyBeats.Api.Services;
 using Microsoft.AspNetCore.Http;
@@ -24,22 +25,53 @@ namespace HolyBeats.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Upload(
             IFormFile file,
-            [FromForm] string title)
+            [FromForm] string genre,
+            [FromForm] string language
+        )
         {
             if (file == null || file.Length == 0)
                 return BadRequest("No file");
+
+            // ✅ безопасное имя файла
+            var safeFileName = Path.GetFileName(file.FileName);
+
+            // ✅ title = имя файла без расширения
+            var title = Path.GetFileNameWithoutExtension(safeFileName);
 
             // ✅ копируем файл в память
             using var ms = new MemoryStream();
             await file.CopyToAsync(ms);
             ms.Position = 0;
 
-            await _r2.UploadAsync(file.FileName, ms);
+            // ===== читаем длительность =====
+            var tempPath = Path.GetTempFileName();
 
+            await System.IO.File.WriteAllBytesAsync(
+                tempPath,
+                ms.ToArray()
+            );
+
+            var tagFile = TagLib.File.Create(tempPath);
+
+            int duration =
+                (int)tagFile.Properties.Duration.TotalSeconds;
+
+            System.IO.File.Delete(tempPath);
+
+            // обязательно вернуть позицию
+            ms.Position = 0;
+
+            // ===== загрузка в Cloudflare R2 =====
+            await _r2.UploadAsync(safeFileName, ms);
+
+            // ===== сохраняем в БД =====
             var track = new Track
             {
                 Title = title,
-                FileName = file.FileName
+                FileName = safeFileName,
+                Genre = genre,
+                Language = language,
+                Duration = duration
             };
 
             _db.Tracks.Add(track);
@@ -47,5 +79,6 @@ namespace HolyBeats.Api.Controllers
 
             return Ok(track);
         }
+
     }
 }
