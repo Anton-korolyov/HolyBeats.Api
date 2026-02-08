@@ -118,5 +118,27 @@ namespace HolyBeats.Api.Controllers
                     .ToList()
             );
         }
+        // 🗑 удалить плейлист целиком
+        [HttpDelete("{id}")]
+        public IActionResult DeletePlaylist(int id)
+        {
+            var playlist = _db.Playlists
+                .FirstOrDefault(x => x.Id == id && x.UserId == UserId());
+
+            if (playlist == null)
+                return NotFound();
+
+            // удалить все связи треков
+            var tracks = _db.PlaylistTracks
+                .Where(x => x.PlaylistId == id);
+
+            _db.PlaylistTracks.RemoveRange(tracks);
+
+            _db.Playlists.Remove(playlist);
+            _db.SaveChanges();
+
+            return Ok();
+        }
+
     }
 }
