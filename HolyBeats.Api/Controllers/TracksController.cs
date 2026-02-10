@@ -71,6 +71,7 @@ namespace HolyBeats.Api.Controllers
             return Ok(new
             {
                 items,
+                total,
                 hasMore = page * pageSize < total
             });
         }
