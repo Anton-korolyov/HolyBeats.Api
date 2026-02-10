@@ -24,11 +24,11 @@ namespace HolyBeats.Api.Controllers
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll(
-    int page = 1,
-    int pageSize = 20,
-    string? search = null,
-    string? genre = "all",
-    string? language = "all")
+        int page = 1,
+        int pageSize = 20,
+        string? search = null,
+        string? genre = "all",
+        string? language = "all")
         {
             var query = _db.Tracks.AsNoTracking().AsQueryable();
 
@@ -74,5 +74,29 @@ namespace HolyBeats.Api.Controllers
                 hasMore = page * pageSize < total
             });
         }
+
+        [HttpGet("filters")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetFilters()
+        {
+            var genres = await _db.Tracks
+                .Select(t => t.Genre)
+                .Distinct()
+                .OrderBy(g => g)
+                .ToListAsync();
+
+            var languages = await _db.Tracks
+                .Select(t => t.Language)
+                .Distinct()
+                .OrderBy(l => l)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                genres,
+                languages
+            });
+        }
+
     }
 }
