@@ -27,26 +27,26 @@ namespace HolyBeats.Api.Controllers
     int page = 1,
     int pageSize = 20,
     string? search = null,
-    string? genre = null,
-    string? language = null)
+    string? genre = "all",
+    string? language = "all")
         {
-            var query = _db.Tracks.AsQueryable();
+            var query = _db.Tracks.AsNoTracking().AsQueryable();
 
             // 🔎 Search by title
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(t =>
-                    t.Title.Contains(search));
+                    EF.Functions.ILike(t.Title, $"%{search}%"));
             }
 
-            // 🎵 Filter by genre
-            if (!string.IsNullOrWhiteSpace(genre))
+            // 🎵 Genre filter
+            if (!string.IsNullOrWhiteSpace(genre) && genre != "all")
             {
                 query = query.Where(t => t.Genre == genre);
             }
 
-            // 🌍 Filter by language
-            if (!string.IsNullOrWhiteSpace(language))
+            // 🌍 Language filter
+            if (!string.IsNullOrWhiteSpace(language) && language != "all")
             {
                 query = query.Where(t => t.Language == language);
             }
